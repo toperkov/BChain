@@ -1,74 +1,64 @@
-#!/usr/bin/python3           # This is server.py file
-import socket              
-import pickle
+#!/usr/bin/python3           # This is client.py file
+
+import socket
 import json
-ip = '127.0.0.1'
 
+ip = ''
+initilized = False
 bChainServersList = []
-bChainServersList.append("127.0.0.5")
-bChainServersList.append("127.0.0.5")
-bChainServersList.append("127.0.0.4")
-bChainServersList.append("127.0.0.2")
-bChainServersList.append("127.0.0.3")
-
 # create a socket object
-def SendAllIpAddr(addr):
-    print("Ulaz u SendAllIpAddr\n")
-    noviSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    noviSocket.connect((ip, 30000))
+def sendIpAddr(host, port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, port)) 
+    s.sendall("INIT".encode('ascii'))
+    s.close()
 
-    b = json.dumps(bChainServersList).encode('utf-8')
-    noviSocket.sendall(b)
+def sendBlock(host, port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, port)) 
+    s.sendall("BLOCK".encode('ascii'))
+    s.close()
+# get local machine name
 
-    # for i in bChainServersList:
-    #     noviSocket.sendall(i.encode())
-    noviSocket.close()
 
-def AddToBChain(addr):
-    print("ulaz u AddToBChain\n")
-    for i in bChainServersList:
-        if i == addr[0]:
-            print("Vec ste dodani u server")
-#server koji nije stalno na mrezi se kaznjava na nacin da
-#ne moze stalno slati zahtjeve za konekcije
-            return
+# connection to hostname on the port.
+                              
+flag = 1
+while (flag != 0):
+    print("usao sam u while\n")
+    flag = int(input("Unesite sta zelite: 1 - salji poruku, 0 - izlaz"))
+
+    if(flag == 1):
+        host = ""       
+        print(host)                       
+        port = 9999
+        sendIpAddr(ip, port)
         
-    bChainServersList.append(addr[0])
-    SendAllIpAddr(addr)
-
-
-
-def main():
-    serversocket = socket.socket(
-                socket.AF_INET, socket.SOCK_STREAM) 
-
-    # get local machine name
-    host = ""                           
-
-    port = 9999                                           
-
-    # bind to the port
-    serversocket.bind((host, port))                                  
-
-    # queue up to 5 requests
-    serversocket.listen(5)                                           
-
-    while True:
-        # establish a connection
-        clientsocket,addr = serversocket.accept()      
-
-        print("Got a connection from %s" % str(addr))
+        recSocket = socket.socket(
+            socket.AF_INET, socket.SOCK_STREAM)
+        recSocket.bind(("", 30000))
+        recSocket.listen(5)
         
-        print("DODATAK: ", str(clientsocket), "\n")
-        
-        poruka = clientsocket.recv(1024)
-        poruka = poruka.decode('ascii')
-        print(type(poruka))
-        if poruka == "INIT":
-            AddToBChain(addr)
-        print("prosli smo funkciju")
+        nesto, adresa = recSocket.accept()
+        b = b''
+        while True:
+            print("usao sam u while petlju\n")
+            tmp = nesto.recv(1024)
+            if not tmp:
+                break
+            b = b + tmp
 
-        clientsocket.close()
+            print("Doasao sam do kraja while petlje\n")
+        d = json.loads(b.decode('utf-8'))
+        print(d)
+        if "0.0.0.0" not in d:
+            bChainServersList = d
+            print(bChainServersList)
+        else:
+            print("Vasa IP adreasa je vec dodana u BChain")
+        nesto.close()
+        recSocket.close()
+    
+    if flag == 2:
+        sendBlock(ip, port)
 
-if __name__ == "__main__":
-    main()

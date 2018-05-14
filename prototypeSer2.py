@@ -3,7 +3,7 @@
 import socket
 import json
 
-ip = '127.0.0.1'
+ip = ''
 initilized = False
 bChainServersList = []
 # create a socket object
@@ -13,6 +13,11 @@ def sendIpAddr(host, port):
     s.sendall("INIT".encode('ascii'))
     s.close()
 
+def sendBlock(host, port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, port)) 
+    s.sendall("BLOCK".encode('ascii'))
+    s.close()
 # get local machine name
 
 
@@ -27,11 +32,11 @@ while (flag != 0):
         host = ""       
         print(host)                       
         port = 9999
-        sendIpAddr(host, port)
+        sendIpAddr(ip, port)
         
         recSocket = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM)
-        recSocket.bind((ip, 30000))
+        recSocket.bind(("", 30000))
         recSocket.listen(5)
         
         nesto, adresa = recSocket.accept()
@@ -51,4 +56,9 @@ while (flag != 0):
             print(bChainServersList)
         else:
             print("Vasa IP adreasa je vec dodana u BChain")
+        nesto.close()
         recSocket.close()
+    
+    if flag == 2:
+        sendBlock(ip, port)
+

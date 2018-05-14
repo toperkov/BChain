@@ -18,7 +18,7 @@ controlList = ["0.0.0.0"]
 async def SendAllIpAddr(addr, loop):
     print("Ulaz u SendAllIpAddr\n")
     noviSocket = socket(AF_INET, SOCK_STREAM)
-    noviSocket.connect((ip, 30000))
+    noviSocket.connect((addr[0], 30000))
 
     b = json.dumps(bChainServersList).encode('utf-8')
     await loop.sock_sendall(noviSocket, b)
@@ -27,18 +27,19 @@ async def SendAllIpAddr(addr, loop):
     print("zavrsio\n")
 
 async def SendControlList(addr, loop):#saljemo kada je novi server
-    print("Ulaz u SendAllIpAddr\n")   #vec inicijaliziran
+    print("Send Control List\n")   #vec inicijaliziran
     noviSocket = socket(AF_INET, SOCK_STREAM)
-    noviSocket.connect((ip, 30000))
+    noviSocket.connect((addr[0], 30000))
 
     b = json.dumps(controlList).encode('utf-8')
     await loop.sock_sendall(noviSocket, b)
 
     noviSocket.close()
-    print("zavrsio\n")
+    print("zavrsio send control list\n")
+    return
 
 async def AddToBChain(addr, loop):
-    print("ulaz u AddToBChain\n")
+    print("Add To BChain\n")
     for i in bChainServersList:
         if i == addr[0]:
             loop.create_task(SendControlList(addr, loop))
@@ -46,18 +47,23 @@ async def AddToBChain(addr, loop):
         
     bChainServersList.append(addr[0])
     loop.create_task(SendAllIpAddr(addr, loop))
+    ##posalji novoga svim ostalima
+    print("KRAJ Add to BChain")
+    return
 
 
-async def echo_server(address, loop):
-    print("echo_server")
+async def Server_connection(address, loop):
+    print("Server_connection")
     sock = socket(AF_INET, SOCK_STREAM)
     sock.bind(address)
     sock.listen(1)
     sock.setblocking(False)
     while True:
+        print("Ulaz u beskonacnu petlju")
         client, addr = await loop.sock_accept(sock)
         print('Connection from', addr)
         loop.create_task(request_handler(client, addr, loop))
+    sock.close()
 
 async def request_handler(client, addr, loop):
     global data
@@ -70,9 +76,13 @@ async def request_handler(client, addr, loop):
         print("usao sam i u init")
         loop.create_task(AddToBChain(addr, loop))
         print("prosao sam funkiju")
+        return
     elif data == "TRANS":
+        ##primamo transakciju
         pass
     elif data == "BLOCK":
+        ##primamo block
+        print("Jedi govna bloče")
         pass
     else:
         loop.create_task(govno(loop))
@@ -87,6 +97,12 @@ async def govno(loop):
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop2 = asyncio.get_event_loop()
-    loop.run_until_complete(echo_server(('', 9999), loop))
-
     
+    server = loop.run_until_complete(Server_connection(('', 9999), loop))
+    try:
+        loop.run_forever()
+        print("govno")
+    except KeyboardInterrupt:
+        pass
+    
+    server.close()  
