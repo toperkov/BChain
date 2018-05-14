@@ -49,6 +49,7 @@ async def AddToBChain(addr, loop):
 
 
 async def echo_server(address, loop):
+    print("echo_server")
     sock = socket(AF_INET, SOCK_STREAM)
     sock.bind(address)
     sock.listen(1)
@@ -60,7 +61,7 @@ async def echo_server(address, loop):
 
 async def request_handler(client, addr, loop):
     global data
-    
+    print("request handler")
     data = await loop.sock_recv(client, 1024)
 
     data = data.decode()
@@ -69,6 +70,10 @@ async def request_handler(client, addr, loop):
         print("usao sam i u init")
         loop.create_task(AddToBChain(addr, loop))
         print("prosao sam funkiju")
+    elif data == "TRANS":
+        pass
+    elif data == "BLOCK":
+        pass
     else:
         loop.create_task(govno(loop))
     print('Connection closed')

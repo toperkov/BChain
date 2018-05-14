@@ -10,7 +10,7 @@ bChainServersList = []
 def sendIpAddr(host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port)) 
-    s.sendall("INITd".encode('ascii'))
+    s.sendall("INIT".encode('ascii'))
     s.close()
 
 # get local machine name
