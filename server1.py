@@ -3,6 +3,17 @@ import asyncio
 import json
 import pickle
 
+class Block:
+    def __init__(self, number):
+        self.number = number #placeholder for the real imp
+
+
+class Transaction:
+    def __init__(self, data):
+        self.sender = data[0]
+        self.recsiever = data[1]
+        self.amount = int(data[2])
+
 ip = '127.0.0.1'
 
 bChainServersList = []
@@ -14,7 +25,29 @@ bChainServersList.append("127.0.0.3")
 
 controlList = ["0.0.0.0"]
 
-# create a socket object
+blockChain = []
+
+transactionQueue = []
+
+def AddBlockToBlockChain(data):#placeholder
+    tmpBlock = Block(data)
+    blockChain.append(tmpBlock)
+
+def CheckReq(data):
+    tmp = list(data.split(","))
+    if(tmp[0].find("INIT") == 0):
+        return (tmp[0], tmp[1:])
+    elif(tmp[0].find("TRANS") == 0):
+        return (tmp[0], tmp[1:])
+    elif(tmp[0].find("BLOCK") == 0):
+        return (tmp[0], tmp[1:])
+    else:
+        return "WRONG REQ"
+
+def AddTransactionToQueue(data):
+    tmpTrans = Transaction(data)
+    transactionQueue.append(tmpTrans)
+
 async def SendAllIpAddr(addr, loop):
     print("Ulaz u SendAllIpAddr\n")
     noviSocket = socket(AF_INET, SOCK_STREAM)
@@ -24,7 +57,7 @@ async def SendAllIpAddr(addr, loop):
     await loop.sock_sendall(noviSocket, b)
 
     noviSocket.close()
-    print("zavrsio\n")
+    print("zavrsio SendAllIpAddr\n")
 
 async def SendControlList(addr, loop):#saljemo kada je novi server
     print("Send Control List\n")   #vec inicijaliziran
@@ -47,10 +80,9 @@ async def AddToBChain(addr, loop):
         
     bChainServersList.append(addr[0])
     loop.create_task(SendAllIpAddr(addr, loop))
-    ##posalji novoga svim ostalima
+    ##posalji novoga svim ostalima#############################
     print("KRAJ Add to BChain")
     return
-
 
 async def Server_connection(address, loop):
     print("Server_connection")
@@ -71,26 +103,24 @@ async def request_handler(client, addr, loop):
     data = await loop.sock_recv(client, 1024)
 
     data = data.decode()
+    (REQ, data) = CheckReq(data)
     print("primio sam {}", format(data))
-    if data == "INIT":
-        print("usao sam i u init")
+
+    if REQ == "INIT":
         loop.create_task(AddToBChain(addr, loop))
-        print("prosao sam funkiju")
-        return
-    elif data == "TRANS":
-        ##primamo transakciju
-        pass
-    elif data == "BLOCK":
+
+    elif REQ == "TRANS":
+        AddTransactionToQueue(data)
+
+    elif REQ == "BLOCK":
         ##primamo block
+        AddBlockToBlockChain(data)
         print("Jedi govna bloče")
         pass
     else:
-        loop.create_task(govno(loop))
+        pass
     print('Connection closed')
     client.close()
-
-async def govno(loop):
-    print("sranje")
 
 
 
@@ -99,10 +129,7 @@ if __name__ == '__main__':
     loop2 = asyncio.get_event_loop()
     
     server = loop.run_until_complete(Server_connection(('', 9999), loop))
-    try:
-        loop.run_forever()
-        print("govno")
-    except KeyboardInterrupt:
-        pass
     
+    loop.run_forever()
+        
     server.close()  
