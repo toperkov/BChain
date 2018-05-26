@@ -1,3 +1,4 @@
+from threading import Thread
 from socket import *
 import asyncio
 import json
@@ -46,6 +47,7 @@ def CheckReq(data):
 
 def AddTransactionToQueue(data):
     tmpTrans = Transaction(data)
+    ##checkTrans(tmpTrans) provjera jel ima dovoljno coina
     transactionQueue.append(tmpTrans)
 
 async def SendAllIpAddr(addr, loop):
@@ -110,10 +112,15 @@ async def request_handler(client, addr, loop):
         loop.create_task(AddToBChain(addr, loop))
 
     elif REQ == "TRANS":
+        ##ako je nasa transakcija sljemo je svima ostalima
+        ##posaljiTransakcijuSvimaOstalima()
+        ##ako je tudja
         AddTransactionToQueue(data)
 
     elif REQ == "BLOCK":
         ##primamo block
+        ##ako je nas blok onda ga prosljedjujemo svima ostalima
+        ##ako je tudji dodajemo ga u blockChain
         AddBlockToBlockChain(data)
         print("Jedi govna bloče")
         pass
@@ -122,9 +129,7 @@ async def request_handler(client, addr, loop):
     print('Connection closed')
     client.close()
 
-
-
-if __name__ == '__main__':
+def RecsieverMainFunction():
     loop = asyncio.get_event_loop()
     loop2 = asyncio.get_event_loop()
     
@@ -132,4 +137,13 @@ if __name__ == '__main__':
     
     loop.run_forever()
         
-    server.close()  
+    server.close()
+
+def govno():
+    print("govno")
+
+def Main():
+    RecsieverMainFunction()
+
+if __name__ == '__main__':
+    Main()
