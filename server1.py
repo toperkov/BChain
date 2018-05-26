@@ -117,7 +117,8 @@ async def request_handler(client, addr, loop):
         ##ako je nasa transakcija sljemo je svima ostalima
         ##posaljiTransakcijuSvimaOstalima()
         ##ako je tudja
-        AddTransactionToQueue(data)
+        ##AddTransactionToQueue(data)
+        pass
 
     elif REQ == "BLOCK":
         ##primamo block
