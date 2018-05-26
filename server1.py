@@ -18,23 +18,25 @@ class Transaction:
 ip = '127.0.0.1'
 
 bChainServersList = []
+##fillers for testing
 bChainServersList.append("127.0.0.5")
 bChainServersList.append("127.0.0.5")
 bChainServersList.append("127.0.0.4")
 bChainServersList.append("127.0.0.2")
 bChainServersList.append("127.0.0.3")
 
+##test helper
 controlList = ["0.0.0.0"]
 
-blockChain = []
+blockChain = [] #list for storing blocks
 
-transactionQueue = []
+transactionQueue = [] #transactions which are not in mining proces
 
 def AddBlockToBlockChain(data):#placeholder
     tmpBlock = Block(data)
     blockChain.append(tmpBlock)
 
-def CheckReq(data):
+def CheckReq(data): #helper for handling incomming REQs
     tmp = list(data.split(","))
     if(tmp[0].find("INIT") == 0):
         return (tmp[0], tmp[1:])
@@ -46,12 +48,12 @@ def CheckReq(data):
         return "WRONG REQ"
 
 def AddTransactionToQueue(data):
-    tmpTrans = Transaction(data)
-    ##checkTrans(tmpTrans) provjera jel ima dovoljno coina
+    tmpTrans = Transaction(data) #raw data to Transaction obj
+    ##checkTrans(tmpTrans) chck if there are enough coins
     transactionQueue.append(tmpTrans)
 
 async def SendAllIpAddr(addr, loop):
-    print("Ulaz u SendAllIpAddr\n")
+    print("Entering SendAllIpAddr\n") ##prints like this are for debuggins purposes
     noviSocket = socket(AF_INET, SOCK_STREAM)
     noviSocket.connect((addr[0], 30000))
 
@@ -138,9 +140,6 @@ def RecsieverMainFunction():
     loop.run_forever()
         
     server.close()
-
-def govno():
-    print("govno")
 
 def Main():
     RecsieverMainFunction()
