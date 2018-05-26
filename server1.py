@@ -17,23 +17,25 @@ class Transaction:
 ip = '127.0.0.1'
 
 bChainServersList = []
+##fillers for testing
 bChainServersList.append("127.0.0.5")
 bChainServersList.append("127.0.0.5")
 bChainServersList.append("127.0.0.4")
 bChainServersList.append("127.0.0.2")
 bChainServersList.append("127.0.0.3")
 
+##test helper
 controlList = ["0.0.0.0"]
 
-blockChain = []
+blockChain = [] #list for storing blocks
 
-transactionQueue = []
+transactionQueue = [] #transactions which are not in mining proces
 
 def AddBlockToBlockChain(data):#placeholder
     tmpBlock = Block(data)
     blockChain.append(tmpBlock)
 
-def CheckReq(data):
+def CheckReq(data): #helper for handling incomming REQs
     tmp = list(data.split(","))
     if(tmp[0].find("INIT") == 0):
         return (tmp[0], tmp[1:])
@@ -45,11 +47,12 @@ def CheckReq(data):
         return "WRONG REQ"
 
 def AddTransactionToQueue(data):
-    tmpTrans = Transaction(data)
+    tmpTrans = Transaction(data) #raw data to Transaction obj
+    ##checkTrans(tmpTrans) chck if there are enough coins
     transactionQueue.append(tmpTrans)
 
 async def SendAllIpAddr(addr, loop):
-    print("Ulaz u SendAllIpAddr\n")
+    print("Entering SendAllIpAddr\n") ##prints like this are for debuggins purposes
     noviSocket = socket(AF_INET, SOCK_STREAM)
     noviSocket.connect((addr[0], 30000))
 
@@ -110,10 +113,15 @@ async def request_handler(client, addr, loop):
         loop.create_task(AddToBChain(addr, loop))
 
     elif REQ == "TRANS":
+        ##ako je nasa transakcija sljemo je svima ostalima
+        ##posaljiTransakcijuSvimaOstalima()
+        ##ako je tudja
         AddTransactionToQueue(data)
 
     elif REQ == "BLOCK":
         ##primamo block
+        ##ako je nas blok onda ga prosljedjujemo svima ostalima
+        ##ako je tudji dodajemo ga u blockChain
         AddBlockToBlockChain(data)
         print("Jedi govna bloče")
         pass
@@ -122,9 +130,7 @@ async def request_handler(client, addr, loop):
     print('Connection closed')
     client.close()
 
-
-
-if __name__ == '__main__':
+def RecsieverMainFunction():
     loop = asyncio.get_event_loop()
     loop2 = asyncio.get_event_loop()
     
@@ -132,4 +138,10 @@ if __name__ == '__main__':
     
     loop.run_forever()
         
-    server.close()  
+    server.close()
+
+def Main():
+    RecsieverMainFunction()
+
+if __name__ == '__main__':
+    Main()
